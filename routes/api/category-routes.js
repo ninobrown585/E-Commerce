@@ -32,17 +32,63 @@ router.get('/:id', (req, res) => {
   }
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   // create a new category
+  try {
+    const newCAtegory = await Plant.create({
+      ...req.body,
+      id: req.session.id,
+    });
+
+    res.status(200).end();
+  } catch (err) {
+    res.status(400).json(err);
+  }
   
 });
 
 router.put('/:id', (req, res) => {
   // update a category by its `id` value
+   
+   Category.update(
+    {
+      // All the fields you can update and the data attached to the request body.
+      id: req.body.id,
+      category_name: req.body.category_name,
+    },
+    {
+      
+      where: {
+        id: req.params.id,
+      },
+    }
+  )
+    .then((updatedCategory) => {
+      // Sends the updated Category as a json response
+      res.json(updatedCategory);
+    })
+    .catch((err) => res.json(err));
 });
 
-router.delete('/:id', (req, res) => {
+router.delete('/:id', async (req, res) => {
   // delete a category by its `id` value
+  try {
+    const categoryData = await Category.destroy({
+      where: {
+        id: req.params.id,
+       // user_id: req.session.user_id,
+      },
+    });
+
+    if (!categoryData) {
+      res.status(404).json({ message: 'No Category found with this id!' });
+      return;
+    }
+
+    res.status(200).json(categoryData);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 });
 
 module.exports = router;
